@@ -87,7 +87,7 @@ class docker_demo(ShutItModule):
 		# yum install something
 		shutit.send('yum install -y telnet',note='Now we can use yum to install telnet')
 		# run top
-		shutit.send('top',note='Note that we only see the process we started this container with (bash), and no OS-level processes - these are running on the host.')
+		shutit.send('top -b -n 1',note='Note that we only see the process we started this container with (bash), and no OS-level processes - these are running on the host.')
 		# show network
 		shutit.send('ifconfig',note='Within the docker container we "see" our own network.')
 		shutit.logout()
@@ -100,7 +100,7 @@ class docker_demo(ShutItModule):
 		shutit.send('for c in {1..20}; do docker run -d --name container_$c centos:centos7 sleep infinity; done',note='Start 20 centos:centos7 containers in the background (-d[aemon]), each with their own name (--name container_<num>, and running "sleep" only.')
 
 		# run top on 'host'
-		shutit.send('top',note='Running top on the host, these 20 containers use minimal resources')
+		shutit.send('top -b -n 1',note='Running top on the host, these 20 containers use minimal resources')
 
 		# enter one, create a file (docker exec)
 		shutit.login('docker exec -ti container_15 bash',note='Enter container 15 with a bash shell')
