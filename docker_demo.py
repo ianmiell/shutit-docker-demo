@@ -125,7 +125,7 @@ class docker_demo(ShutItModule):
 		shutit.send('docker images',note='docker images now shows mycontainer has been tagged')
 
 		shutit.login(command='docker run -ti --name mycontainer_1 mycontainer bash',note='Start container up from this image and give it the name "mycontainer_1"')
-		shutit.send('ls /tmp/container_15',note='The file is there in my newly created container')
+		shutit.send('ls /tmp/hello_container_15',note='The file is there in my newly created container')
 		shutit.logout(note='Log out of the container')
 
 		shutit.send('docker ps -a',note='Back on the host, get the list of containers, and you can see mycontainer_15 and mycontainer_1 exist as separate containers')
