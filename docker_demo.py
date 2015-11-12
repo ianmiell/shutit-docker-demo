@@ -134,12 +134,9 @@ class docker_demo(ShutItModule):
 
 
 
-
 		# dockerfiles (docker build)
 
 		# docker rmi (docker rmi)
-
-		# docker compose?
 
 		# docker volumes - persistence (docker -v)
 
