@@ -75,54 +75,64 @@ class docker_demo(ShutItModule):
 		shutit.send('rm -rf /tmp/docker_demo')
 		shutit.send('mkdir -p /tmp/docker_demo')
 		shutit.send('cd /tmp/docker_demo')
-		shutit.send('vagrant init larryli/vivid64')
+		shutit.send('vagrant init ubuntu/trusty64')
 		shutit.send('vagrant up --provider virtualbox')
 		shutit.login(command='vagrant ssh')
 		shutit.login(command='sudo su')
 		shutit.send('cat /etc/issue',note='We are in an ubuntu environment.')
-		shutit.send('yum install httpd',note='yum does not work!')
+		shutit.send('yum install httpd',note='yum does not work!',check_exit=False)
 		shutit.install('docker.io',note='Install docker')
 		# Start up a centos container (docker run)
-		shutit.login('docker run -ti centos:centos7 bash',note='Start up an instance of a centos:centos7 container. This downloads the centos:centos7 docker image.')
+		shutit.login(command='docker run -ti centos:centos7 bash',note='Start up an instance of a centos:centos7 container. This downloads the centos:centos7 docker image.')
 		# yum install something
 		shutit.send('yum install -y telnet',note='Now we can use yum to install telnet')
 		# run top
 		shutit.send('top -b -n 1',note='Note that we only see the process we started this container with (bash), and no OS-level processes - these are running on the host.')
 		# show network
-		shutit.send('ifconfig',note='Within the docker container we "see" our own network.')
-		shutit.logout()
+		shutit.send('ifstat',note='Within the docker container we "see" our own network.')
+		shutit.logout(note='Log out of the container')
 
 		# docker images (docker images)
 		shutit.send('docker images',note='Back on the host machine, we can see what images are now downloaded')
+		# docker ps (docker ps)
 		shutit.send('docker ps -a',note='See that we have a container that is now exited (because the bash process ended when we quit), but is still available for us to manipulate.')
 
 		# start up 20 docker containers in the background (docker run -d) and name them (docker run --name)
 		shutit.send('for c in {1..20}; do docker run -d --name container_$c centos:centos7 sleep infinity; done',note='Start 20 centos:centos7 containers in the background (-d[aemon]), each with their own name (--name container_<num>, and running "sleep" only.')
 
 		# run top on 'host'
-		shutit.send('top -b -n 1',note='Running top on the host, these 20 containers use minimal resources')
+		shutit.send('top -b -n 1 | head',note='Running top on the host, these 20 containers use minimal resources')
 
 		# enter one, create a file (docker exec)
-		shutit.login('docker exec -ti container_15 bash',note='Enter container 15 with a bash shell')
+		shutit.login(command='docker exec -ti container_15 bash',note='Enter container 15 with a bash shell')
 		shutit.send('touch /tmp/hello_container_15',note='Create a file on this container, and exit')
-		shutit.logout()
+		shutit.logout(note='Log out of the container')
 
 		# file not on host
-		shutit.send('ls /tmp/hello_container_15',note='Back on the host, and the file is not there')
+		shutit.send('ls /tmp/hello_container_15',note='Back on the host, and the file is not there',check_exit=False)
 		# enter another one, file not there
-		shutit.login('docker exec -ti container_3 bash',note='Enter container 3 with a bash shell')
-		shutit.send('ls /tmp/hello_container_15',note='On container 3 the file is not there')
-		shutit.logout()
+		shutit.login(command='docker exec -ti container_3 bash',note='Enter container 3 with a bash shell')
+		shutit.send('ls /tmp/hello_container_15',note='On container 3 the file is not there',check_exit=False)
+		shutit.logout(note='Log out of the container')
 
+		shutit.login(command='docker exec -ti container_15 bash',note='Back to container 15 with a bash shell')
+		shutit.send('ls /tmp/hello_container_15',note='On container 15 the file is still there')
+		shutit.logout(note='Log out of the container')
 		# commit the first one and give resulting image a name, (docker commit -t)
-		shutit.send('docker commit -t mycontainer container_15',note='Commit our changed container and tag as mycontainer:latest')
+		shutit.send('ID=$(docker commit container_15)',note='Commit our changed container as an image')
+		shutit.send('docker tag $ID mycontainer',note='Tag the image with a memorable name')
 
 		shutit.send('docker images',note='docker images now shows mycontainer has been tagged')
-		# docker ps (docker ps)
 
-		shutit.pause_point('')
+		shutit.login(command='docker run -ti --name mycontainer_1 mycontainer bash',note='Start container up from this image and give it the name "mycontainer_1"')
+		shutit.send('ls /tmp/container_15',note='The file is there in my newly created container')
+		shutit.logout(note='Log out of the container')
 
+		shutit.send('docker ps -a',note='Back on the host, get the list of containers, and you can see mycontainer_15 and mycontainer_1 exist as separate containers')
 		# docker rm (docker rm)
+		shutit.send('docker ps -a -q | xargs docker rm -f',note='Kill all the containers')
+
+
 
 
 		# dockerfiles (docker build)
@@ -133,8 +143,9 @@ class docker_demo(ShutItModule):
 
 		# docker volumes - persistence (docker -v)
 
-		shutit.logout()
-		shutit.logout()
+		shutit.pause_point('')
+		shutit.logout('Log out of root on the VM')
+		shutit.logout('Log out of the VM')
 		return True
 
 	def get_config(self, shutit):
