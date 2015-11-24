@@ -77,13 +77,13 @@ class docker_demo(ShutItModule):
 		shutit.send('cd /tmp/docker_demo')
 		shutit.send('vagrant init ubuntu/trusty64')
 		shutit.send('vagrant up --provider virtualbox')
-		shutit.login(command='vagrant ssh')
-		shutit.login(command='sudo su')
+		shutit.login(command='vagrant ssh',prompt_prefix='vagrant')
+		shutit.login(command='sudo su',prompt_prefix='vagrant_root')
 		shutit.send('cat /etc/issue',note='We are in an ubuntu environment.')
 		shutit.send('yum install httpd',note='yum does not work!',check_exit=False)
 		shutit.install('docker.io',note='Install docker')
 		# Start up a centos container (docker run)
-		shutit.login(command='docker run -ti centos:centos7 bash',note='Start up an instance of a centos:centos7 container. This downloads the centos:centos7 docker image.')
+		shutit.login(command='docker run -ti centos:centos7 bash',note='Start up an instance of a centos:centos7 container. This downloads the centos:centos7 docker image.',prompt_prefix='centos7_container')
 		# yum install something
 		shutit.send('yum install -y telnet',note='Now we can use yum to install telnet')
 		# run top
@@ -104,18 +104,18 @@ class docker_demo(ShutItModule):
 		shutit.send('top -b -n 1 | head',note='Running top on the host, these 20 containers use minimal resources')
 
 		# enter one, create a file (docker exec)
-		shutit.login(command='docker exec -ti container_15 bash',note='Enter container 15 with a bash shell')
+		shutit.login(command='docker exec -ti container_15 bash',note='Enter container 15 with a bash shell',prompt_prefix='container_15')
 		shutit.send('touch /tmp/hello_container_15',note='Create a file on this container, and exit')
 		shutit.logout(note='Log out of the container')
 
 		# file not on host
 		shutit.send('ls /tmp/hello_container_15',note='Back on the host, and the file is not there',check_exit=False)
 		# enter another one, file not there
-		shutit.login(command='docker exec -ti container_3 bash',note='Enter container 3 with a bash shell')
+		shutit.login(command='docker exec -ti container_3 bash',note='Enter container 3 with a bash shell',prompt_prefix='container_3')
 		shutit.send('ls /tmp/hello_container_15',note='On container 3 the file is not there',check_exit=False)
 		shutit.logout(note='Log out of the container')
 
-		shutit.login(command='docker exec -ti container_15 bash',note='Back to container 15 with a bash shell')
+		shutit.login(command='docker exec -ti container_15 bash',note='Back to container 15 with a bash shell',prompt_prefix='container_15')
 		shutit.send('ls /tmp/hello_container_15',note='On container 15 the file is still there')
 		shutit.logout(note='Log out of the container')
 		# commit the first one and give resulting image a name, (docker commit -t)
@@ -124,7 +124,7 @@ class docker_demo(ShutItModule):
 
 		shutit.send('docker images',note='docker images now shows mycontainer has been tagged')
 
-		shutit.login(command='docker run -ti --name mycontainer_1 mycontainer bash',note='Start container up from this image and give it the name "mycontainer_1"')
+		shutit.login(command='docker run -ti --name mycontainer_1 mycontainer bash',note='Start container up from this image and give it the name "mycontainer_1"',prompt_prefix='mycontainer_1')
 		shutit.send('ls /tmp/hello_container_15',note='The file is there in my newly created container')
 		shutit.logout(note='Log out of the container')
 
@@ -145,7 +145,6 @@ RUN yum -y install httpd
 
 		# docker volumes - persistence (docker -v) TODO
 
-		shutit.pause_point('')
 		shutit.logout(note='Log out of root on the VM')
 		shutit.logout(note='Log out of the VM')
 		return True
