@@ -132,17 +132,22 @@ class docker_demo(ShutItModule):
 		# docker rm (docker rm)
 		shutit.send('docker ps -a -q | xargs docker rm -f',note='Kill all the containers')
 
-
-
 		# dockerfiles (docker build)
+		dockerfile = '''FROM centos:centos7
+RUN yum -y install httpd
+'''
+		shutit.send_file('/tmp/Dockerfile',dockerfile)
+		shutit.send('mkdir -p dockerbuild && cd dockerbuild && mv /tmp/Dockerfile .')
+		shutit.send('cat Dockerfile',note='Here is a simple Dockerfile that we are going to use to build a container')
+		shutit.send('docker build -t centos_httpd .',note='Build the docker image. It assumes the dockerfile is called "Dockerfile" in the directory we give it, and we tag the resulting image as "centos_httpd"')
 
-		# docker rmi (docker rmi)
+		# docker rmi (docker rmi) TODO
 
-		# docker volumes - persistence (docker -v)
+		# docker volumes - persistence (docker -v) TODO
 
 		shutit.pause_point('')
-		shutit.logout('Log out of root on the VM')
-		shutit.logout('Log out of the VM')
+		shutit.logout(note='Log out of root on the VM')
+		shutit.logout(note='Log out of the VM')
 		return True
 
 	def get_config(self, shutit):
